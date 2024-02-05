@@ -1,0 +1,115 @@
+openapi: 3.0.3
+info:
+  title: '[WISdoM] Smartmeter Data Management Service'
+  description: |
+    This microservice allows the management of smart meter data that has been 
+    written into the database.
+    Furthermore, the service provides an endpoint allowing external services to
+    write collected smart meter data into the database, either as a batch operation
+    or writing single entries.
+  version: 0.1.0
+servers:
+  - url: '/smartmeter-data'
+
+
+tags:
+  - name: reading
+    description: |
+      Operations that allow reading data series information
+
+  - name: cud
+    description: |
+      Operations that allow C(reate)/(U)pdate/(D)elete operations
+
+components:
+  schemas:
+    DataSeriesInformation:
+      properties:
+        id:
+          type: string
+          required: true
+          title: Smart Meter ID
+          description: ID of the smart meter used to record the time series
+        startDate:
+          type: string
+          required: true
+          format: date-time
+          title: Time Series Start
+          description: |
+            The date and time of the first datapoint recorded in the time series
+        endDate:
+          type: string
+          required: true
+          format: date-time
+          title: Time Series End
+          description: |
+            The date and time of the last datapoint recorded in the time series
+    Datapoint:
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          required: true
+        value:
+          type: number
+          format: float
+
+paths:
+  /:
+    get:
+      summary: Get available data series
+      description: |
+        This endpoint returns information about the available smart meters and
+        their data series
+      tags:
+        - reading
+      responses:
+        200:
+          description: Data Series Information
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DataSeriesInformation'
+        204:
+          description: No data series available
+
+  /{data-series-id}:
+    parameters:
+      - in: path
+        name: data-series-id
+        description: |
+          The ID of the Data Series as shown in the Data Series Information 
+          response
+      - in: query
+        name: from
+        description: |
+          A [ISO 8691](https://en.wikipedia.org/wiki/ISO_8601) compliant 
+          timestamp indicating the start of the handled data series excerpt. 
+          The timestamp is used in a inclusive way.
+        allowEmptyValue: true
+        schema:
+          maximum: 1
+          type: string
+          format: date-time
+      - in: query
+        name: until
+        description: |
+          A [ISO 8691](https://en.wikipedia.org/wiki/ISO_8601) compliant 
+          timestamp indicating the end of the handled data series excerpt. 
+          The timestamp is used in a inclusive way.
+        allowEmptyValue: true
+        schema:
+          maximum: 1
+          type: string
+          format: date-time
+
+
+    get:
+      summary: retrieve data
+      description: |
+        Retrieve data from the data series.
+      tags:
+        - reading
+      responses:
