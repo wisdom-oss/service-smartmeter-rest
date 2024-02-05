@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: gomod
+    schedule:
+      interval: daily
+      day: sunday
+      time: "03:00"
+    allow:
+      - dependency-type: direct
+    target-branch: "dev"
+    assignees:
+      - "dr4hcu5-jan"
+    reviewers:
+      - "dr4hcu5-jan"
+    directory: /
+    commit-message:
+      prefix: "⬆️ "
+    labels:
+      - "dependencies"
