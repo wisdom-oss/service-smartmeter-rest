@@ -16,6 +16,11 @@
 > This service does not interact with smart meters and their configuration as
 > this should only be done by authorized personnel.
 
+> [!IMPORTANT]
+> This microservice requires a PostgreSQL database with the 
+> [timescaleDB](https://github.com/timescale/timescaledb)
+> extension installed.
+
 This microservice allows the management of smart meter data that has been 
 written into the database.
 Furthermore, the service provides an endpoint allowing external services to
