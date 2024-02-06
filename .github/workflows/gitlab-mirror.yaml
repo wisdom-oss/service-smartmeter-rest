@@ -7,7 +7,7 @@ jobs:
     steps:
       - name: Try creating repository
         run: |
-          REPO_CREATION_STATUS=$(curl -X POST --oauth2-bearer "${{ secrets.MIRROR_PASSWORD }}" "${{ secrets.MIRROR_HOST }}/api/v4/projects?name=${{ github.event.repository.name }}&namespace_id=14014")
+          REPO_CREATION_STATUS=$(curl -X POST -w "%{http_code}" --oauth2-bearer "${{ secrets.MIRROR_PASSWORD }}" "${{ secrets.MIRROR_HOST }}/api/v4/projects?name=${{ github.event.repository.name }}&namespace_id=14014")
 
           if [ "$REPO_CREATION_STATUS" -eq 201  ]; then
               echo "Repository created"
