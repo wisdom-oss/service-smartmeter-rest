@@ -5,7 +5,7 @@ jobs:
   mirror-repo:
     runs-on: ubuntu-latest
     steps:
-      - uses: wisdom-oss/mirroring-action@v0.1.0
+      - uses: wisdom-oss/mirroring-action@v0.1.1
         with:
           user: ${{ secrets.MIRROR_USER }}
           pat: ${{ secrets.MIRROR_PASSWORD }}
