@@ -10,3 +10,4 @@ jobs:
           user: ${{ secrets.MIRROR_USER }}
           pat: ${{ secrets.MIRROR_PASSWORD }}
           repository: ${{ github.event.repository.name }}
+          host: ${{ secrets.MIRROR_HOST }}
