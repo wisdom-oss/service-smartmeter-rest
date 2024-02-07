@@ -5,24 +5,8 @@ jobs:
   mirror-repo:
     runs-on: ubuntu-latest
     steps:
-      - name: Try creating repository
-        run: |
-          REPO_CREATION_STATUS=$(curl -X POST -w "%{http_code}" -o /dev/null --oauth2-bearer "${{ secrets.MIRROR_PASSWORD }}" "${{ secrets.MIRROR_HOST }}/api/v4/projects?name=${{ github.event.repository.name }}&namespace_id=14014")
-
-          if [ "$REPO_CREATION_STATUS" -eq 201  ]; then
-              echo "Repository created"
-          elif [ "$REPO_CREATION_STATUS" -eq 400  ]; then
-              echo "Repository already existing"
-          else
-              echo "Unknown error occurred during mirroring setup"
-              exit 1
-          fi
-      - uses: actions/checkout@v4
+      - uses: wisdom-oss/mirroring-action@v0.1.0
         with:
-          fetch-depth: 0
-      - uses: yesolutions/mirror-action@master
-        with:
-          REMOTE: ${{ secrets.MIRROR_HOST }}/wisdom-oss-mirror/${{ github.event.repository.name }}
-          GIT_USERNAME: ${{ secrets.MIRROR_USER }}
-          GIT_PASSWORD: ${{ secrets.MIRROR_PASSWORD }}
-          PUSH_ALL_REFS: true
+          user: ${{ secrets.MIRROR_USER }}
+          pat: ${{ secrets.MIRROR_PASSWORD }}
+          repository: ${{ github.event.repository.name }}
