@@ -66,6 +66,17 @@ paths:
       responses:
         200:
           description: Data Series Information
+          headers:
+            Accept-Ranges:
+              description: |
+                Indicates which range types are supported in the microservice
+              schema:
+                type: string
+                default: "unix"
+                description: |
+                  The range type `unix` shows that the microservice may use
+                  the `Rage` header to read the data ranges that have been
+                  requested
           content:
             application/json:
               schema:
@@ -82,34 +93,253 @@ paths:
         description: |
           The ID of the Data Series as shown in the Data Series Information 
           response
-      - in: query
-        name: from
-        description: |
-          A [ISO 8691](https://en.wikipedia.org/wiki/ISO_8601) compliant 
-          timestamp indicating the start of the handled data series excerpt. 
-          The timestamp is used in a inclusive way.
-        allowEmptyValue: true
-        schema:
-          maximum: 1
-          type: string
-          format: date-time
-      - in: query
-        name: until
-        description: |
-          A [ISO 8691](https://en.wikipedia.org/wiki/ISO_8601) compliant 
-          timestamp indicating the end of the handled data series excerpt. 
-          The timestamp is used in a inclusive way.
-        allowEmptyValue: true
-        schema:
-          maximum: 1
-          type: string
-          format: date-time
-
+        required: true
 
     get:
-      summary: retrieve data
+      summary: Read Timeseries
       description: |
         Retrieve data from the data series.
+      parameters:
+        - in: query
+          name: from
+          description: |
+            A [ISO 8691] compliant 
+            timestamp indicating the end of the handled data series excerpt. 
+            The timestamp is used in a inclusive way.
+            
+            [ISO 8691]: https://en.wikipedia.org/wiki/ISO_8601
+          allowEmptyValue: false
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: until
+          description: |
+            A [ISO 8691] compliant 
+            timestamp indicating the end of the handled data series excerpt. 
+            The timestamp is used in a inclusive way.
+            
+            [ISO 8691]: https://en.wikipedia.org/wiki/ISO_8601
+          allowEmptyValue: false
+          schema:
+            maximum: 1
+            type: string
+            format: date-time
+        - in: header
+          name: Range
+          description: |
+            The `Range` header allows specifying the time range which shall be
+            included in the response output. It uses the following syntax:
+
+            `unix=<fromTimestamp>-<untilTimestamp>`
+            
+            
+            where `fromTimestamp` and `untilTimestamp` are unix epoch timestamps.
+            If either of the timestamps is missing, the dataset is returned 
+            from/until the datapoint.
+            If the header is not prefixed with `unix` the request will be rejected
+            as the range type is not known.
+            If this header is specified and valid. It takes precedence over the
+            query parameters `from` and `until`.
+            When supplying multiple ranges, please separate them with a comma
+            (`,`).
+            When parsing, the headers value will be split at every comma to
+            separate the ranges
+          schema:
+            maximum: 1
+            type: string
+            pattern: '^unix=(?<firstFromTimestamp>\d+)?-(?<firstUntilTimestamp>\d+)(,(?<additionalFromTimestamp>\d+)?-(?<additionalUntilTimestamp>\d+)?)*$'
+        - in: query
+          name: format
+          description: |
+            The output wanted in the returned response
+          schema:
+            maximum: 1
+            type: string
+            default: json
+            enum:
+              - json
+              - csv
       tags:
         - reading
       responses:
+        200:
+          description: >
+            Complete data series
+            
+            This response contains the complete data series. This response is
+            only returned, if the request did not specify any time constraints.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Datapoint'
+            text/csv:
+              schema:
+                type: string
+                example: >
+                  timestamp,value
+                  
+                  2024-02-12T09:53:55.567Z,0
+
+        206:
+          description: >
+            Excerpt of a data series
+            
+            
+            _Returned if at least one data range has been specified either using
+            the_ `Range` _header or the_ `from` _and_ `until` _query parameters_
+            
+            
+            If multiple ranges have been specified, the `Content-Type` of the 
+            response will be `multipart/byteranges` as specified in 
+            [RFC9110](https://www.rfc-editor.org/rfc/rfc9110#section-15.3.7.2).
+            If this happens, the response will not contain the `Content-Range`
+            header as it is not allowed in this context.
+            The specified output type will be reflected in each part of the
+            response.
+            However, clients supporting `multipart/byteranges` should 
+            automatically detect the single parts and no manual parsing should
+            be needed.
+          headers:
+            Content-Range:
+              description: |
+                This value shows the returned contents range, if only one range
+                has been specified
+              schema:
+                type: string
+                pattern: '^unix (?<rangeStart>\d+)-(?<rangeEnd>\d+)\/\*$'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Datapoint'
+            text/csv:
+              schema:
+                type: string
+                example: >
+                  timestamp,value
+
+                  2024-02-12T09:53:55.567Z,0
+            multipart/byteranges:
+              schema:
+                type: object
+              example: |
+                --THIS_STRING_SEPARATES
+                Content-Type: application/json
+                Content-Range: unix 500-999/*
+
+                [
+                  {
+                    "timestamp": "2024-02-12T10:02:42.721Z",
+                    "value": 0
+                  }
+                ]
+                --THIS_STRING_SEPARATES
+                Content-Type: application/json
+                Content-Range: unix 7000-7999/*
+
+                [
+                  {
+                    "timestamp": "2024-02-12T10:02:42.721Z",
+                    "value": 0
+                  }
+                ]
+                --THIS_STRING_SEPARATES--
+
+
+        416:
+          description: |
+            The requested time range is not available in the database
+    post:
+      summary: Add Data to the Timeseries
+      description: |
+
+      tags:
+        - cud
+      requestBody:
+        content:
+          text/csv:
+            schema:
+              type: string
+            example: |-
+              ts,flow_rate
+              2024-02-21T10:03:58+01:00,5
+              2024-02-21T10:04:58+01:00,4.67
+              2024-02-21T10:05:58+01:00,1.23
+              2024-02-21T10:06:58+01:00,4.20
+      responses:
+        201:
+          description: The Data has been added to the time series
+    patch:
+      summary: Replace Data in the Time series
+      description: |
+
+      tags:
+        - cud
+      parameters:
+        - in: query
+          name: from
+          description: |
+            A [ISO 8691] compliant 
+            timestamp indicating the end of the handled data series excerpt. 
+            The timestamp is used in a inclusive way.
+
+            [ISO 8691]: https://en.wikipedia.org/wiki/ISO_8601
+          allowEmptyValue: false
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: until
+          description: |
+            A [ISO 8691] compliant 
+            timestamp indicating the end of the handled data series excerpt. 
+            The timestamp is used in a inclusive way.
+
+            [ISO 8691]: https://en.wikipedia.org/wiki/ISO_8601
+          allowEmptyValue: false
+          schema:
+            maximum: 1
+            type: string
+            format: date-time
+        - in: header
+          name: Range
+          description: |
+            The `Range` header allows specifying the time range which shall be
+            included in the response output. It uses the following syntax:
+
+            `unix=<fromTimestamp>-<untilTimestamp>`
+
+
+            where `fromTimestamp` and `untilTimestamp` are unix epoch timestamps.
+            If either of the timestamps is missing, the dataset is returned 
+            from/until the datapoint.
+            If the header is not prefixed with `unix` the request will be rejected
+            as the range type is not known.
+            If this header is specified and valid it takes precedence over the
+            query parameters `from` and `until`.
+            When supplying multiple ranges, please separate them with a comma
+            (`,`).
+            When parsing, the headers value will be split at every comma to
+            separate the ranges
+          schema:
+            maximum: 1
+            type: string
+            pattern: '^unix=(?<firstFromTimestamp>\d+)?-(?<firstUntilTimestamp>\d+)(,(?<additionalFromTimestamp>\d+)?-(?<additionalUntilTimestamp>\d+)?)*$'
+      requestBody:
+        content:
+          text/csv:
+            schema:
+              type: string
+            example: |-
+              ts,flow_rate
+              2024-02-21T10:03:58+01:00,5
+              2024-02-21T10:04:58+01:00,4.67
+              2024-02-21T10:05:58+01:00,1.23
+              2024-02-21T10:06:58+01:00,4.20
+      responses:
+        200:
+          description: Data has been replaced
