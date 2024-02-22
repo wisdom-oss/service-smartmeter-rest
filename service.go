@@ -11,11 +11,9 @@ import (
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog"
 	"github.com/rs/zerolog/log"
-	wisdomMiddleware "github.com/wisdom-oss/microservice-middlewares/v3"
+	wisdomMiddleware "github.com/wisdom-oss/microservice-middlewares/v4"
 
-	"microservice/routes"
-
-	"microservice/globals"
+	"github.com/wisdom-oss/service-smartmeter-rest/globals"
 )
 
 // the main function bootstraps the http server and handlers used for this
@@ -28,15 +26,12 @@ func main() {
 	// create a new router
 	router := chi.NewRouter()
 	// add some middlewares to the router to allow identifying requests
-	router.Use(wisdomMiddleware.ErrorHandler(globals.ServiceName, globals.Errors))
+	router.Use(wisdomMiddleware.ErrorHandler)
 	router.Use(chiMiddleware.RequestID)
 	router.Use(chiMiddleware.RealIP)
 	router.Use(httplog.Handler(l))
 	// now add the authorization middleware to the router
-	router.Use(wisdomMiddleware.Authorization(globals.AuthorizationConfiguration, globals.ServiceName))
-	// now mount the admin router
-	router.HandleFunc("/", routes.BasicHandler)
-	router.HandleFunc("/internal-error", routes.BasicWithErrorHandling)
+	router.Use(wisdomMiddleware.Authorization(globals.ServiceName))
 
 	// now boot up the service
 	// Configure the HTTP server
