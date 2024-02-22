@@ -3,7 +3,6 @@
   "optional": {
     "LISTEN_PORT": "8000",
     "PG_PORT": "5432",
-    "AUTH_CONFIG_FILE_LOCATION": "./authConfig.json",
     "QUERY_FILE_LOCATION": "./queries.sql"
   }
 }

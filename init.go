@@ -69,7 +69,6 @@ func init() {
 
 	configureLogger()
 	loadServiceConfiguration()
-	setupAuthorization()
 	connectDatabase()
 	loadPreparedQueries()
 
@@ -136,46 +135,6 @@ func loadServiceConfiguration() {
 		initLogger.Fatal().Err(err).Msg("environment validation failed")
 	}
 	initLogger.Info().Msg("loaded service configuration from environment")
-}
-
-// setupAuthorization configures the authorization requirements for the
-// microservice
-//
-// It first checks if the authorization configuration file location is set in
-// the environment variables.
-// If it is not set, it logs a warning message and uses the default
-// authorization configuration.
-// If the path is set but empty, it logs a warning message and uses the default
-// configuration.
-// If the path is not empty, it tries to populate the authorization
-// configuration from the file.
-// If it encounters an error while populating the configuration, it logs a
-// warning message and uses the default configuration.
-// Finally, it logs a message indicating that the authorization requirements
-// have been configured.
-func setupAuthorization() {
-	initLogger.Info().Msg("configuring authorization requirements")
-	filePath, isSet := globals.Environment["AUTH_CONFIG_FILE_LOCATION"]
-	if !isSet {
-		initLogger.Warn().Interface("defaultConfig", DefaultAuth).Msg("no authorization configuration file found. using default")
-		globals.AuthorizationConfiguration = DefaultAuth
-		return
-	}
-
-	if strings.TrimSpace(filePath) == "" {
-		initLogger.Warn().Interface("defaultConfig", DefaultAuth).Msg("empty path set for authorization configuration file. using default")
-		globals.AuthorizationConfiguration = DefaultAuth
-		return
-	}
-
-	err := globals.AuthorizationConfiguration.PopulateFromFilePath(filePath)
-	if err != nil {
-		initLogger.Warn().Err(err).Msg("unable to populate configuration from detected file. using default")
-		globals.AuthorizationConfiguration = DefaultAuth
-		return
-	}
-
-	initLogger.Info().Msg("configured authorization requirements")
 }
 
 // connectDatabase uses the previously read environment variables to connect the
