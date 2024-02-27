@@ -2,12 +2,8 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"net"
 	"os"
-	"strings"
-	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	wisdomType "github.com/wisdom-oss/commonTypes"
@@ -20,16 +16,9 @@ import (
 	"github.com/rs/zerolog/pkgerrors"
 
 	"github.com/wisdom-oss/service-smartmeter-rest/globals"
-)
 
-// DefaultAuth contains the default authentication configuration if no file
-// is present. it only allows named users access to this service who use the
-// same group as the service name
-var DefaultAuth = wisdomType.AuthorizationConfiguration{
-	Enabled:                   true,
-	RequireUserIdentification: true,
-	RequiredUserGroup:         globals.ServiceName,
-}
+	_ "github.com/wisdom-oss/go-healthcheck/client"
+)
 
 var initLogger = log.With().Bool("startup", true).Logger()
 
@@ -41,39 +30,11 @@ func init() {
 	if err != nil {
 		initLogger.Debug().Msg("no .env files found")
 	}
-
-	args := os.Args[1:]
-	if len(args) > 0 && args[0] == "-health" {
-		conn, err := net.Dial("tcp", tcpSocket)
-		if err != nil {
-			log.Fatal().Err(err).Msg("unable to connect to tcp socket")
-		}
-		conn.SetReadDeadline(time.Now().Add(5 * time.Second))
-
-		conn.Write([]byte("ping\n"))
-
-		inputBuffer := make([]byte, BUF_SIZE)
-		n, err := conn.Read(inputBuffer)
-		if err != nil && errors.Is(err, os.ErrDeadlineExceeded) {
-			log.Fatal().Err(err).Msg("heartbeat server responded too slow")
-		}
-
-		returnedMessage := strings.TrimSpace(string(inputBuffer[:n-1]))
-
-		if returnedMessage != "success" {
-			fmt.Fprint(os.Stderr, returnedMessage)
-			os.Exit(1)
-		}
-		os.Exit(0)
-	}
-
 	configureLogger()
 	loadServiceConfiguration()
 	connectDatabase()
 	loadPreparedQueries()
-
 	initLogger.Info().Msg("initialization process finished")
-
 }
 
 // configureLogger handles the configuration of the logger used in the
