@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -13,7 +14,10 @@ import (
 	"github.com/rs/zerolog/log"
 	wisdomMiddleware "github.com/wisdom-oss/microservice-middlewares/v4"
 
+	hcServer "github.com/wisdom-oss/go-healthcheck/server"
+
 	"github.com/wisdom-oss/service-smartmeter-rest/globals"
+	"github.com/wisdom-oss/service-smartmeter-rest/routes"
 )
 
 // the main function bootstraps the http server and handlers used for this
@@ -23,15 +27,29 @@ func main() {
 	l := log.With().Str("step", "main").Logger()
 	l.Info().Msgf("starting %s service", globals.ServiceName)
 
+	hcS := hcServer.HealthcheckServer{}
+	hcS.InitWithFunc(func() error {
+		// check the database connection
+		return globals.Db.Ping(context.Background())
+	})
+	err := hcS.Start()
+	if err != nil {
+		l.Fatal().Err(err).Msg("unable to start healthcheck server")
+	}
+	go hcS.Run()
+
 	// create a new router
 	router := chi.NewRouter()
 	// add some middlewares to the router to allow identifying requests
-	router.Use(wisdomMiddleware.ErrorHandler)
+	router.Use(httplog.Handler(l))
 	router.Use(chiMiddleware.RequestID)
 	router.Use(chiMiddleware.RealIP)
-	router.Use(httplog.Handler(l))
-	// now add the authorization middleware to the router
+	// now add the error and authorization middleware to the router
+	router.Use(wisdomMiddleware.ErrorHandler)
 	router.Use(wisdomMiddleware.Authorization(globals.ServiceName))
+
+	router.Get("/", routes.Overview)
+	router.Get("/{data-series-id}", routes.TimeSeries)
 
 	// now boot up the service
 	// Configure the HTTP server
