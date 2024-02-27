@@ -27,19 +27,16 @@ components:
       properties:
         id:
           type: string
-          required: true
           title: Smart Meter ID
           description: ID of the smart meter used to record the time series
         startDate:
           type: string
-          required: true
           format: date-time
           title: Time Series Start
           description: |
             The date and time of the first datapoint recorded in the time series
         endDate:
           type: string
-          required: true
           format: date-time
           title: Time Series End
           description: |
@@ -49,7 +46,6 @@ components:
         timestamp:
           type: string
           format: date-time
-          required: true
         value:
           type: number
           format: float
@@ -94,6 +90,9 @@ paths:
           The ID of the Data Series as shown in the Data Series Information 
           response
         required: true
+        schema:
+          type: string
+          minLength: 1
 
     get:
       summary: Read Timeseries
@@ -125,30 +124,6 @@ paths:
             maximum: 1
             type: string
             format: date-time
-        - in: header
-          name: Range
-          description: |
-            The `Range` header allows specifying the time range which shall be
-            included in the response output. It uses the following syntax:
-
-            `unix=<fromTimestamp>-<untilTimestamp>`
-            
-            
-            where `fromTimestamp` and `untilTimestamp` are unix epoch timestamps.
-            If either of the timestamps is missing, the dataset is returned 
-            from/until the datapoint.
-            If the header is not prefixed with `unix` the request will be rejected
-            as the range type is not known.
-            If this header is specified and valid. It takes precedence over the
-            query parameters `from` and `until`.
-            When supplying multiple ranges, please separate them with a comma
-            (`,`).
-            When parsing, the headers value will be split at every comma to
-            separate the ranges
-          schema:
-            maximum: 1
-            type: string
-            pattern: '^unix=(?<firstFromTimestamp>\d+)?-(?<firstUntilTimestamp>\d+)(,(?<additionalFromTimestamp>\d+)?-(?<additionalUntilTimestamp>\d+)?)*$'
         - in: query
           name: format
           description: |
@@ -178,9 +153,8 @@ paths:
             text/csv:
               schema:
                 type: string
-                example: >
+                example: |-
                   timestamp,value
-                  
                   2024-02-12T09:53:55.567Z,0
 
         206:
@@ -219,13 +193,12 @@ paths:
             text/csv:
               schema:
                 type: string
-                example: >
+                example: |-
                   timestamp,value
-
                   2024-02-12T09:53:55.567Z,0
             multipart/byteranges:
               schema:
-                type: object
+                type: string
               example: |
                 --THIS_STRING_SEPARATES
                 Content-Type: application/json
@@ -249,7 +222,9 @@ paths:
                 ]
                 --THIS_STRING_SEPARATES--
 
-
+        404:
+          description: |
+            No Timeseries with this ID found
         416:
           description: |
             The requested time range is not available in the database
