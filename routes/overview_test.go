@@ -53,6 +53,5 @@ func TestOverview_JSON(t *testing.T) {
 	request := httptest.NewRequest("GET", "/", nil)
 	responseRecorder := httptest.NewRecorder()
 	_ = validator.NewValidator(contract).ForTest(t, responseRecorder, request)
-
 	router.ServeHTTP(responseRecorder, request)
 }
