@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	wisdomType "github.com/wisdom-oss/commonTypes"
+	wisdomType "github.com/wisdom-oss/commonTypes/v2"
 
 	"github.com/joho/godotenv"
 
