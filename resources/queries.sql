@@ -6,7 +6,7 @@ FROM time_series.smart_meter_data
 GROUP BY smart_meter;
 
 -- name: timeseries-exists
-SELECT EXISTS(SELECT smart_meter_data.smart_meter FROM time_series.smart_meter_data WHERE smart_meter = $1);
+SELECT EXISTS(SELECT DISTINCT smart_meter_data.smart_meter FROM time_series.smart_meter_data WHERE smart_meter = $1);
 
 -- name: timeseries
 SELECT time, flow_rate
@@ -17,16 +17,19 @@ WHERE smart_meter = $1;
 SELECT time, flow_rate
 FROM time_series.smart_meter_data
 WHERE smart_meter = $1
-  AND time BETWEEN $2 AND $3;
+AND time > $2
+AND time < $3;
 
 -- name: timeseries-daterange-from
 SELECT time, flow_rate
 FROM time_series.smart_meter_data
 WHERE smart_meter = $1
   AND time > $2
+ORDER BY time;
 
 -- name: timeseries-daterange-until
 SELECT time, flow_rate
 FROM time_series.smart_meter_data
 WHERE smart_meter = $1
   AND time < $2
+ORDER BY time;
