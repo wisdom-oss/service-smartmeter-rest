@@ -49,6 +49,48 @@ components:
         value:
           type: number
           format: float
+  responses:
+    Error:
+      description: An Error has occurred in the application or an invalid input has been provided
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+              - type
+              - status
+              - title
+              - detail
+              - instance
+            properties:
+              type:
+                type: string
+              status:
+                type: integer
+              title:
+                type: string
+              detail:
+                type: string
+              instance:
+                type: string
+              error:
+                type: string
+
+    DataSeries:
+      description: A data series that has been read from the database
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Datapoint'
+        application/cbor:
+          schema:
+            type: string
+        text/csv:
+          schema:
+            type: string
+            pattern: '^timestamp,value\n((\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)*(Z|[\+-]\d{2}:\d{2})),(\d+(.\d+)?)(\n)?)+'
 
 paths:
   /:
@@ -62,17 +104,6 @@ paths:
       responses:
         200:
           description: Data Series Information
-          headers:
-            Accept-Ranges:
-              description: |
-                Indicates which range types are supported in the microservice
-              schema:
-                type: string
-                default: "unix"
-                description: |
-                  The range type `unix` shows that the microservice may use
-                  the `Rage` header to read the data ranges that have been
-                  requested
           content:
             application/json:
               schema:
@@ -110,7 +141,6 @@ paths:
           allowEmptyValue: false
           schema:
             type: string
-            format: date-time
         - in: query
           name: until
           description: |
@@ -123,7 +153,6 @@ paths:
           schema:
             maximum: 1
             type: string
-            format: date-time
         - in: query
           name: format
           description: |
@@ -134,100 +163,24 @@ paths:
             default: json
             enum:
               - json
+              - cbor
               - csv
       tags:
         - reading
       responses:
         200:
-          description: >
-            Complete data series
-            
-            This response contains the complete data series. This response is
-            only returned, if the request did not specify any time constraints.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Datapoint'
-            text/csv:
-              schema:
-                type: string
-                example: |-
-                  timestamp,value
-                  2024-02-12T09:53:55.567Z,0
+          $ref: '#/components/responses/DataSeries'
 
         206:
-          description: >
-            Excerpt of a data series
-            
-            
-            _Returned if at least one data range has been specified either using
-            the_ `Range` _header or the_ `from` _and_ `until` _query parameters_
-            
-            
-            If multiple ranges have been specified, the `Content-Type` of the 
-            response will be `multipart/byteranges` as specified in 
-            [RFC9110](https://www.rfc-editor.org/rfc/rfc9110#section-15.3.7.2).
-            If this happens, the response will not contain the `Content-Range`
-            header as it is not allowed in this context.
-            The specified output type will be reflected in each part of the
-            response.
-            However, clients supporting `multipart/byteranges` should 
-            automatically detect the single parts and no manual parsing should
-            be needed.
-          headers:
-            Content-Range:
-              description: |
-                This value shows the returned contents range, if only one range
-                has been specified
-              schema:
-                type: string
-                pattern: '^unix (?<rangeStart>\d+)-(?<rangeEnd>\d+)\/\*$'
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Datapoint'
-            text/csv:
-              schema:
-                type: string
-                example: |-
-                  timestamp,value
-                  2024-02-12T09:53:55.567Z,0
-            multipart/byteranges:
-              schema:
-                type: string
-              example: |
-                --THIS_STRING_SEPARATES
-                Content-Type: application/json
-                Content-Range: unix 500-999/*
+          $ref: '#/components/responses/DataSeries'
 
-                [
-                  {
-                    "timestamp": "2024-02-12T10:02:42.721Z",
-                    "value": 0
-                  }
-                ]
-                --THIS_STRING_SEPARATES
-                Content-Type: application/json
-                Content-Range: unix 7000-7999/*
-
-                [
-                  {
-                    "timestamp": "2024-02-12T10:02:42.721Z",
-                    "value": 0
-                  }
-                ]
-                --THIS_STRING_SEPARATES--
+        400:
+          $ref: '#/components/responses/Error'
 
         404:
-          description: |
-            No Timeseries with this ID found
+          $ref: '#/components/responses/Error'
         416:
-          description: |
-            The requested time range is not available in the database
+          $ref: '#/components/responses/Error'
     post:
       summary: Add Data to the Timeseries
       description: |
@@ -266,7 +219,6 @@ paths:
           allowEmptyValue: false
           schema:
             type: string
-            format: date-time
         - in: query
           name: until
           description: |
@@ -277,33 +229,7 @@ paths:
             [ISO 8691]: https://en.wikipedia.org/wiki/ISO_8601
           allowEmptyValue: false
           schema:
-            maximum: 1
             type: string
-            format: date-time
-        - in: header
-          name: Range
-          description: |
-            The `Range` header allows specifying the time range which shall be
-            included in the response output. It uses the following syntax:
-
-            `unix=<fromTimestamp>-<untilTimestamp>`
-
-
-            where `fromTimestamp` and `untilTimestamp` are unix epoch timestamps.
-            If either of the timestamps is missing, the dataset is returned 
-            from/until the datapoint.
-            If the header is not prefixed with `unix` the request will be rejected
-            as the range type is not known.
-            If this header is specified and valid it takes precedence over the
-            query parameters `from` and `until`.
-            When supplying multiple ranges, please separate them with a comma
-            (`,`).
-            When parsing, the headers value will be split at every comma to
-            separate the ranges
-          schema:
-            maximum: 1
-            type: string
-            pattern: '^unix=(?<firstFromTimestamp>\d+)?-(?<firstUntilTimestamp>\d+)(,(?<additionalFromTimestamp>\d+)?-(?<additionalUntilTimestamp>\d+)?)*$'
       requestBody:
         content:
           text/csv:
