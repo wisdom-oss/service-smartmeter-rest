@@ -47,13 +47,6 @@ func TimeSeries(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := globals.Db.Query(r.Context(), rawQuery, dataSeriesID)
-	if err != nil {
-		errorHandler <- err
-		<-statusChannel
-		return
-	}
-
 	var timeseriesExists []bool
 	err = pgxscan.Select(r.Context(), globals.Db, &timeseriesExists, rawQuery, dataSeriesID)
 	if err != nil {
@@ -122,7 +115,7 @@ func TimeSeries(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err = globals.Db.Query(r.Context(), rawQuery, parameter...)
+	rows, err := globals.Db.Query(r.Context(), rawQuery, parameter...)
 	if err != nil {
 		errorHandler <- err
 		<-statusChannel
