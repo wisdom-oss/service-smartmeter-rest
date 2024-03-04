@@ -3,6 +3,7 @@ module github.com/wisdom-oss/service-smartmeter-rest
 go 1.22.0
 
 require (
+	github.com/fxamacker/cbor/v2 v2.6.0
 	github.com/georgysavva/scany/v2 v2.1.0
 	github.com/getkin/kin-openapi v0.122.0
 	github.com/go-chi/chi/v5 v5.0.12
@@ -11,8 +12,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/qustavo/dotsql v1.2.0
 	github.com/rs/zerolog v1.31.0
-	github.com/wisdom-oss/commonTypes v1.0.0
-	github.com/wisdom-oss/commonTypes/v2 v2.0.0
+	github.com/wisdom-oss/commonTypes/v2 v2.0.1
 	github.com/wisdom-oss/go-healthcheck v1.0.2
 	github.com/wisdom-oss/microservice-middlewares/v4 v4.0.1
 	openapi.tanna.dev/go/validator v0.4.0
@@ -43,6 +43,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
+	github.com/x448/float16 v0.8.4 // indirect
 	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/mod v0.15.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
