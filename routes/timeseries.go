@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
+	"github.com/fxamacker/cbor/v2"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/go-chi/chi/v5"
 	wisdomTypes "github.com/wisdom-oss/commonTypes/v2"
@@ -132,12 +132,14 @@ func TimeSeries(w http.ResponseWriter, r *http.Request) {
 
 	// since the query has been successful, now determine the output content
 	// type
-	selectedContentType := strings.TrimSpace(r.URL.Query().Get("format"))
-	if selectedContentType == "csv" {
-		// output the CSV file
+	var outputFormat types.OutputFormat
+	outputFormat.FromString(r.URL.Query().Get("format"))
+
+	switch outputFormat {
+	case types.CSV:
 		w.Header().Set("Content-Type", "text/csv")
 		csvWriter := csv.NewWriter(w)
-		err := csvWriter.Write([]string{"timestamp", "value"})
+		err = csvWriter.Write([]string{"timestamp", "value"})
 		if err != nil {
 			errorHandler <- err
 			<-statusChannel
@@ -147,19 +149,26 @@ func TimeSeries(w http.ResponseWriter, r *http.Request) {
 		for _, dataPoint := range timeseries {
 			timestampString := dataPoint.Timestamp.Time.Format(time.RFC3339)
 			value := fmt.Sprintf("%f", dataPoint.Value.Float64)
-			csvWriter.Write([]string{timestampString, value})
+			err = csvWriter.Write([]string{timestampString, value})
+			if err != nil {
+				errorHandler <- err
+				<-statusChannel
+				return
+			}
 			csvWriter.Flush()
 		}
-		return
-	}
+		break
+	case types.JSON:
+		// handle JSON output
+		w.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(w).Encode(timeseries)
+		break
 
-	// since json or another unsupported format has been selected output json
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(timeseries)
-	if err != nil {
-		errorHandler <- err
-		<-statusChannel
-		return
+	case types.CBOR:
+		w.Header().Set("Content-Type", "application/cbor")
+		err = cbor.NewEncoder(w).Encode(timeseries)
+		break
+
 	}
 
 }
