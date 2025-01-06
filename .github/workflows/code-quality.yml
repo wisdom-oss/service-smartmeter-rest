@@ -1,20 +1,16 @@
 name: code-quality
 on:
   pull_request:
-    paths:
-      - "**/go.*"
-      - "**.go"
   push:
-    paths:
-      - "**/go.*"
-      - "**.go"
   schedule:
     - cron: '15 12 * * 5'
 
 permissions:
-  contents: read
-  pull-requests: read
+  contents: write
+  pull-requests: write
   checks: write
+  issues: write
+
 
 jobs:
   tests:
@@ -33,18 +29,12 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: stable
-      - run: |
-          go install github.com/jstemmer/go-junit-report/v2@latest
-          go run . -migrate-only
-          go test -v ./... | go-junit-report -set-exit-code -subtest-mode exclude-parents -out report.xml
-      - uses: test-summary/action@v2
-        if: always()
-        with:
-          paths: report.xml
+      - uses: wisdom-oss/actions/go-test@main
+        env:
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGHOST: localhost
+          PGSSLMODE: disable
 
   code-ql:
     runs-on: ubuntu-latest
