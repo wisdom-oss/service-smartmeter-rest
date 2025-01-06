@@ -1,0 +1,16 @@
+openapi: 3.1.0
+info: 
+  title: SmartMeter Data API
+  version: 2.0.0
+
+servers: 
+  - url: https://{wisdom-host}/api/smartmeter-data
+    variables:
+      wisdom-host:
+        default: wisdom-demo.uol.de 
+        description: The Server your WISdoM Instance is running on
+components: 
+  securitySchemes:
+    wisdom:
+      type: openIdConnect
+      openIdConnectUrl: /api/auth/.well-known/openid-configuration
