@@ -1,0 +1,22 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+    },
+    "gopls": {
+        "ui.semanticTokens": true
+    },
+    "editor.suggest.showWords": false,
+    "go.testTimeout": "300s",
+    "go.lintTool": "golangci-lint",
+    "go.lintOnSave": "workspace",
+    "go.lintFlags": [
+        "--fix"
+    ],
+    "go.diagnostic.vulncheck": "Imports",
+    "go.disableConcurrentTests": true,
+}
