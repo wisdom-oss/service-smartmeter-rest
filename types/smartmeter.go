@@ -14,7 +14,7 @@ var geoJsonMarshalOptions = []geojson.EncodeGeometryOption{
 
 // SmartMeter represents real world smart meter.
 type SmartMeter struct {
-	ID                   string                 `db:"id"                    json:"id"`
+	ID                   int                    `db:"id"                    json:"id"`
 	Geometry             geom.T                 `db:"geometry"`
 	Name                 *string                `db:"name"                  json:"name"`
 	Key                  string                 `db:"key"                   json:"key"`
