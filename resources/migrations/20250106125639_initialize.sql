@@ -1,5 +1,8 @@
 -- +goose Up
 -- +goose StatementBegin
+-- activate timescaledb if not already enabled
+CREATE EXTENSION IF NOT EXISTS timescaledb;
+
 -- activate postgis if not already enabled
 CREATE EXTENSION IF NOT EXISTS postgis;
 
