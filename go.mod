@@ -5,12 +5,16 @@ go 1.23.4
 require (
 	github.com/gin-contrib/requestid v1.0.4
 	github.com/gin-gonic/gin v1.10.0
+	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.7.2
+	github.com/joho/godotenv v1.5.1
 	github.com/pressly/goose/v3 v3.24.0
 	github.com/qustavo/dotsql v1.2.0
 	github.com/spf13/viper v1.19.0
 	github.com/thanhpk/randstr v1.0.6
+	github.com/twpayne/go-geom v1.5.7
 	github.com/wisdom-oss/common-go/v3 v3.1.3
+
 )
 
 require (
@@ -28,11 +32,9 @@ require (
 	github.com/goccy/go-json v0.10.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
-	github.com/joho/godotenv v1.5.1
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.9 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
