@@ -23,6 +23,7 @@
 !Dockerfile
 !internal/config.example.toml
 !openapi.yaml
+!/resources/**
 
 # !Makefile
 
