@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS
     geodata.smartmeters (
         id bigserial PRIMARY KEY,
         geometry geometry NOT NULL,
-        KEY TEXT NOT NULL,
-        NAME TEXT,
+        "key" TEXT NOT NULL,
+        "name" TEXT,
         additional_properties jsonb DEFAULT NULL
     );
 
@@ -39,7 +39,7 @@ CREATE SCHEMA IF NOT EXISTS timeseries;
 -- create the timeseries table
 CREATE TABLE IF NOT EXISTS
     timeseries.smartmeter_data (
-        TIME timestamptz NOT NULL DEFAULT NOW(),
+        "time" timestamptz NOT NULL DEFAULT NOW(),
         smart_meter INT NOT NULL REFERENCES geodata.smartmeters (id) ON UPDATE CASCADE ON DELETE CASCADE,
         flow_rate DOUBLE PRECISION DEFAULT 0
     );
@@ -55,13 +55,13 @@ CREATE SCHEMA IF NOT EXISTS auth;
 CREATE TABLE IF NOT EXISTS
     auth.services (
         id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid (),
-        NAME TEXT NOT NULL UNIQUE,
+        "name" TEXT NOT NULL UNIQUE,
         description TEXT,
         supported_scope_levels scope_level[]
     );
 
 INSERT INTO
-    auth.services (NAME, supported_scope_levels)
+    auth.services ("name", supported_scope_levels)
 VALUES
     ('smartmeters', '{read, write, *}') ON CONFLICT
 DO NOTHING
