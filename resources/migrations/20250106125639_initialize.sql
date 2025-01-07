@@ -14,7 +14,7 @@ CREATE SCHEMA IF NOT EXISTS geodata;
 CREATE TABLE IF NOT EXISTS
     geodata.layers (
         id UUID DEFAULT gen_random_uuid () NOT NULL PRIMARY KEY,
-        NAME TEXT NOT NULL,
+        "name" TEXT NOT NULL,
         description TEXT,
         "table" TEXT NOT NULL UNIQUE,
         crs INT NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS
     );
 
 INSERT INTO
-    geodata.layers (NAME, "table", crs)
+    geodata.layers ("name", "table", crs)
 VALUES
     ('Smartmeter Locations', 'smartmeters', 4326);
 
