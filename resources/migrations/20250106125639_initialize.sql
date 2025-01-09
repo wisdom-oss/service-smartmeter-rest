@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS
 INSERT INTO
     geodata.layers ("name", "table", crs)
 VALUES
-    ('Smartmeter Locations', 'smartmeters', 4326);
+    ('Smartmeter Locations', 'smartmeters', 4326) ON CONFLICT ON CONSTRAINT layers_table_key
+DO NOTHING;
 
 -- now setup the timeseries schema
 CREATE SCHEMA IF NOT EXISTS timeseries;
@@ -49,23 +50,29 @@ CREATE TABLE IF NOT EXISTS
 
 -- convert it into a hypertable
 SELECT
-    create_hypertable ('timeseries.smartmeter_data', by_range ('time', INTERVAL '7 day'));
+    create_hypertable (
+        'timeseries.smartmeter_data',
+        by_range ('time', INTERVAL '7 day'),
+        if_not_exists=>TRUE
+    );
 
 -- configure the auth schema as we need to register ourselves in the service
 -- database
 CREATE SCHEMA IF NOT EXISTS auth;
+
+CREATE TYPE auth.scope_level AS ENUM('read', 'write', 'delete', '*');
 
 CREATE TABLE IF NOT EXISTS
     auth.services (
         id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid (),
         "name" TEXT NOT NULL UNIQUE,
         description TEXT,
-        supported_scope_levels scope_level[]
+        supported_scope_levels auth.scope_level[]
     );
 
 INSERT INTO
     auth.services ("name", supported_scope_levels)
 VALUES
-    ('smartmeters', '{read, write, *}') ON CONFLICT
-DO NOTHING
+    ('smartmeters', '{read, write, *}');
+
 -- +goose StatementEnd
