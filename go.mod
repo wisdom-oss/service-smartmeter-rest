@@ -8,12 +8,15 @@ require (
 	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/joho/godotenv v1.5.1
+	github.com/jszwec/csvutil v1.10.0
 	github.com/pressly/goose/v3 v3.24.0
 	github.com/qustavo/dotsql v1.2.0
 	github.com/spf13/viper v1.19.0
 	github.com/thanhpk/randstr v1.0.6
 	github.com/twpayne/go-geom v1.5.7
 	github.com/wisdom-oss/common-go/v3 v3.1.3
+	github.com/twpayne/pgx-geom v0.0.2
+	github.com/georgysavva/scany/v2 v2.1.3
 
 )
 
