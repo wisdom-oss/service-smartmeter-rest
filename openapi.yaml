@@ -305,11 +305,6 @@ paths:
         - Timeseries
       requestBody:
         content:
-          application/json:
-            schema:
-              types: array
-              items:
-                $ref: '#/components/schemas/Datapoint'
           text/csv:
             schema:
               type: object
@@ -328,11 +323,23 @@ paths:
               2025-01-07T11:40:30+00:00,1.457
       responses:
         201:
-          description: Datapoints Added
+          description: |
+            *Datapoints Added*
+
+            The datapoints from the CSV request body have been imported.
+            The `invalidDatapoints` field will be omitted from the request, if
+            there are no invalid datapoints in the request body.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                 $ref: '#/components/schemas/Datapoint'
+                type: object
+                properties:
+                  insertedDatapoints:
+                    type: integer
+                    description: number of inserted datapoints
+                  invalidDatapoints:
+                    type: array
+                    description: line numbers of invalid datapoints
+                    items:
+                      type: integer
   
