@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	pgxgeom "github.com/twpayne/pgx-geom"
 
 	"microservice/internal"
 )
@@ -60,8 +63,20 @@ func Connect() (err error) {
 	)
 	slog.Debug("generated connection string", "connString", connectionString)
 
+	dbConfig, err := pgxpool.ParseConfig(connectionString)
+	if err != nil {
+		return fmt.Errorf("%s: %w", ErrPoolConfigurationFailed.Error(), err)
+	}
+
+	dbConfig.BeforeAcquire = func(ctx context.Context, c *pgx.Conn) bool {
+		if err := pgxgeom.Register(ctx, c); err != nil {
+			return false
+		}
+		return true
+	}
+
 	slog.Debug("initializing database pool with connection string", "connString", connectionString)
-	Pool, err = pgxpool.New(context.Background(), connectionString)
+	Pool, err = pgxpool.NewWithConfig(context.Background(), dbConfig)
 	if err != nil {
 		return fmt.Errorf("%s: %w", ErrPoolConfigurationFailed.Error(), err)
 	}
