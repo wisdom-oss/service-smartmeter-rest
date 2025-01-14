@@ -13,8 +13,8 @@ import (
 // to run in release scenarios.
 // This enables security hardening and decreases the default logging level.
 func GenerateRouter() (*gin.Engine, error) {
-	r := prepareRouter()
 	gin.SetMode(gin.ReleaseMode)
+	r := prepareRouter()
 
 	/* Configure OpenID Connect */
 	authority := internal.Configuration.GetString(internal.ConfigKey_Oidc_Authority)
