@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jszwec/csvutil"
 )
 
 // invalidTimestamp is a predefined value for marking invalid timestamp formats
@@ -22,7 +21,7 @@ type Timestamp struct{ pgtype.Timestamptz }
 // MarshalCSV implements the [csvutil.Marshaler] interface which allows writing
 // [pgtype.Timestamptz] values into a csv file.
 func (t Timestamp) MarshalCSV() ([]byte, error) {
-	return csvutil.Marshal(t.Time)
+	return []byte(t.Time.Format(time.RFC3339Nano)), nil
 }
 
 // Unmarshal implements the [csvutils.Unmarshaler] interface which enables the
