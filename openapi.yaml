@@ -20,10 +20,6 @@ components:
     Datapoint:
       type: object
       properties:
-        smartmeter:
-          type: integer
-          min: 0
-          description: ID of the smart meter
         timestamp:
           type: string
           format: date-time
@@ -286,6 +282,20 @@ paths:
           schema:
             type: string
             format: date-time
+        - in: header
+          name: Accept
+          description: |
+            Control the format in which the endpoint returns the data. If no
+            header is explicitly set or the format is not supported, the service
+            returns a JSON representation of the data
+          required: false
+          schema:
+            type: string
+            enum:
+              - application/json
+              - text/csv
+              - application/x-ndjson
+            default: application/json
       responses:
         200:
           description: Timeseries
@@ -295,6 +305,18 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Datapoint'
+            application/x-ndjson:
+              schema:
+                description: |
+                  The ND-JSON format encapsulates each element of an array as
+                  a singular json object.
+                  The array entires are delmitied by a newline character
+                type: object
+            text/csv:
+              schema:
+                type: string
+                description: |
+                  The CSV encoding of the requested datapoints
 
     post:
       operationId: add-datapoints
