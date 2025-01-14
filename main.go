@@ -34,6 +34,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	slog.Info("checking and running applyable database migrations")
 	err = db.MigrateDatabase()
 	if err != nil {
 		slog.Error("failed to execute database migrations", "error", err)
@@ -62,6 +63,7 @@ func main() {
 	dataAPI := router.Group("/data")
 	{
 		dataAPI.POST("/:meterID", data.Import)
+		dataAPI.GET("/:meterID", data.Timeseries)
 	}
 
 	// create a http server to handle the requests
@@ -81,6 +83,10 @@ func main() {
 	// Set up some the signal handling to allow the server to shut down gracefully
 	shutdownSignal := make(chan os.Signal, 1)
 	signal.Notify(shutdownSignal, syscall.SIGINT, syscall.SIGTERM)
+
+	// Allow the server to become responsive
+	time.Sleep(250 * time.Millisecond) //nolint:mnd
+	slog.Info("service ready")
 
 	// Block further code execution until the shutdown signal was received
 	<-shutdownSignal
