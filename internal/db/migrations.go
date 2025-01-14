@@ -16,7 +16,6 @@ import (
 const databaseDialect = "postgres"
 
 func MigrateDatabase() error {
-
 	goose.SetTableName(generateVersionTableName(internal.ServiceName))
 	goose.SetBaseFS(resources.DatabaseMigrations)
 	goose.SetLogger(goose.NopLogger())
@@ -26,7 +25,6 @@ func MigrateDatabase() error {
 	}
 
 	db := stdlib.OpenDBFromPool(Pool)
-
 	if err := goose.Up(db, "migrations"); err != nil {
 		return err
 	}
