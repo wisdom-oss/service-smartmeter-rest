@@ -1,0 +1,13 @@
+{
+    "configurations": [
+        {
+            "name": "Debug",
+            "type": "go",
+            "mode": "debug",
+            "request": "launch",
+            "program": "${workspaceFolder}",
+            "hideSystemGoroutines": true,
+            "internalConsoleOptions": "openOnSessionStart"
+        }
+    ]
+}

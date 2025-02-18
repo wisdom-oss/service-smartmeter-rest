@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+      "golang.go",
+      "ms-azuretools.vscode-docker",
+      "jinliming2.vscode-go-template",
+      "tamasfe.even-better-toml",
+      "andrewbutson.vscode-openapi-viewer",
+    ]
+}
