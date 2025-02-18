@@ -19,4 +19,5 @@
     ],
     "go.diagnostic.vulncheck": "Imports",
     "go.disableConcurrentTests": true,
+    "go.testEnvFile": "${workspaceFolder}/.env",
 }
