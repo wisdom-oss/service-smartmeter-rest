@@ -123,13 +123,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/SmartMeter'
 
-  /meters/{meterID}:
+  /meters/{meterKey}:
     parameters:
       - in: path
-        name: meterID
+        name: meterKey
         required: true
         schema:
-          type: integer
+          type: string
 
     get:
       operationId: smartmeter-details
