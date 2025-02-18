@@ -44,3 +44,31 @@ func (s Smartmeter) MarshalJSON() ([]byte, error) {
 	out.Geometry = encodedGeometry
 	return json.Marshal(out)
 }
+
+func (s *Smartmeter) UnmarshalJSON(src []byte) error {
+	var smartmeter Smartmeter
+	var in struct {
+		ID                   int             `json:"id"`
+		Geometry             json.RawMessage `json:"geometry"`
+		Name                 *string         `json:"name"`
+		Key                  string          `json:"key"`
+		AdditionalProperties map[string]any  `json:"additionalProperties"`
+	}
+	if err := json.Unmarshal(src, &in); err != nil {
+		return err
+	}
+
+	var decodedGeometry geom.T
+	if err := geojson.Unmarshal(in.Geometry, &decodedGeometry); err != nil {
+		return err
+	}
+
+	smartmeter.ID = in.ID
+	smartmeter.Name = in.Name
+	smartmeter.Key = in.Key
+	smartmeter.Geometry = decodedGeometry
+	smartmeter.AdditionalProperties = in.AdditionalProperties
+
+	*s = smartmeter
+	return nil
+}
