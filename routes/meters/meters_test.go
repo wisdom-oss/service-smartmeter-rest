@@ -7,6 +7,8 @@ import (
 	"os"
 	"testing"
 
+	_ "github.com/joho/godotenv/autoload"
+
 	"github.com/gin-gonic/gin"
 
 	testdataloader "github.com/peteole/testdata-loader"
