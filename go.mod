@@ -1,9 +1,9 @@
 module microservice
 
-go 1.20
+go 1.24
 
 require (
-	github.com/go-chi/chi/v5 v5.0.11
+	github.com/go-chi/chi/v5 v5.4.0
 	github.com/go-chi/httplog v0.3.2
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
@@ -11,7 +11,6 @@ require (
 	github.com/rs/zerolog v1.31.0
 	github.com/wisdom-oss/commonTypes v1.0.0
 	github.com/wisdom-oss/microservice-middlewares/v3 v3.0.1
-
 )
 
 require (
